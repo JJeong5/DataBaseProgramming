@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rideshare.party.mapper.PartyMapper">
+
+    <insert id="partySave" useGeneratedKeys="true" keyProperty="pId">
+        insert into party
+        (type, start_date, start_time, start_point, start_lat, start_lng, end_point, total_headcnt
+        <if test="type == '카풀'.toString()">, car_number, content</if>)
+        values
+            (<if test="type == '택시'.toString()">'택시'</if>
+             <if test="type == '카풀'.toString()">'카풀'</if>
+             , #{startDate}, #{startTime}, #{startPoint}, #{startLat}, #{startLng}, #{endPoint}, #{totalHeadcnt}
+             <if test="type == '카풀'.toString()">, #{carNumber}, #{content}</if>)
+    </insert>
+
+    <select id="listPage" resultType="com.rideshare.party.domain.Party">
+        select * from party
+        <where>
+            <if test="type == '택시'.toString()">and type = '택시'</if>
+            <if test="type == '카풀'.toString()">and type = '카풀'</if>
+            <if test="lastId != null and lastId != 0">and p_id &lt; #{lastId}</if>
+            <if test="keyword != null and keyword != ''">and start_point like concat('%', #{keyword}, '%')</if>
+        </where>
+        order by p_id desc limit 0, #{amount}
+    </select>
+
+    <select id="carpoolListPage" resultType="com.rideshare.party.domain.Party">
+
+    </select>
+
+    <select id="findById" resultType="com.rideshare.party.domain.Party">
+        select * from party where p_id=#{pId}
+    </select>
+
+    <delete id="deleteById">
+        delete from party where p_id=#{pId}
+    </delete>
+
+    <update id="updateById" >
+        update party
+        set type=#{type},
+            start_point=#{startPoint},
+            start_lat=#{startLat},
+            start_lng=#{startLng},
+            end_point=#{endPoint},
+            total_headcnt=#{totalHeadcnt},
+            start_date=#{startDate},
+            start_time=#{startTime},
+            <if test="type == '택시'.toString()">
+                car_number=null,
+                content=null
+            </if>
+            <if test="type == '카풀'.toString()">
+                car_number=#{carNumber},
+                content=#{content}
+            </if>
+        where p_id=#{pId}
+    </update>
+
+    <update id="onConfirm">
+        update party
+        set is_confirm=true
+        where p_id=#{pId}
+    </update>
+
+    <update id="onFinish">
+        update party
+        set is_finish=true
+        where p_id=#{pId}
+    </update>
+
+    <update id="increaseCurrentHeadcnt">
+        update party
+        set current_headcnt=(
+            select nowNum from (
+                select current_headcnt+1 as nowNum from party where p_id=#{pId}
+            ) as a
+        )
+        where p_id=#{pId}
+    </update>
+
+    <select id="checkCurrentHeadcnt" resultType="string">
+        select current_headcnt from party where p_id=#{pId}
+    </select>
+</mapper>

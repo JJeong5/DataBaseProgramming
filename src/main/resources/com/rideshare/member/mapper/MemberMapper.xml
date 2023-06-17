@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rideshare.member.mapper.MemberMapper">
+    <insert id="join" useGeneratedKeys="true" keyProperty="mId">
+        insert into member
+            (id, pw, nickname, email, auth_code, auth_status)
+        values
+            (#{id}, #{pw}, #{nickname}, #{email}, #{authCode}, #{authStatus})
+    </insert>
+
+    <select id="findAuthCodeById" resultType="int">
+        select auth_code from member
+        where id=#{id}
+    </select>
+
+    <update id="updateAuthStatus">
+        update member set auth_status=true where id=#{id}
+    </update>
+</mapper>
